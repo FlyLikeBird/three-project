@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
 import * as dat from 'dat.gui';
+import Img from '../assets/images/textures/texture0.jpg';
 // 1.创建场景
 const scene = new THREE.Scene();
 
@@ -13,26 +14,21 @@ camera.position.set(0, 0, 10);
 scene.add(camera);
 
 // 3.场景中添加Object3D物理, 创建几何体对象
+
+
+// 导入纹理
+const textureLoader = new THREE.TextureLoader();
+const texture = textureLoader.load(Img);
+
+console.log(texture);
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
 const cubeMaterial = new THREE.MeshBasicMaterial({
-    color:0xffff00
+    // color:0xffff00,
+    map:texture
 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-console.log(cubeGeometry);
-console.log(cube);
-cube.rotation.set(0, 0, Math.PI/4);
 scene.add(cube);
 
-// 通过缓冲区几何体创建自定义几何体
-const geometry = new THREE.BufferGeometry();
-const vertices = new Float32Array([
-    -1.0, -1.0, 1.0,
-    1.0, -1.0, 1.0,
-    1.0, 1.0, 1.0,
-]);
-geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-const mesh = new THREE.Mesh(geometry, cubeMaterial);
-scene.add(mesh);
 
 // 4. 初始化一个渲染器
 const renderer = new THREE.WebGLRenderer();
