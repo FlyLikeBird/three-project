@@ -2,14 +2,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
 import * as dat from 'dat.gui';
-import Img from '../assets/images/textures/texture1.png';
+import Img from '../assets/images/textures/texture0.jpg';
+import Alpha from '../assets/images/textures/texture0-alpha.png';
+import AOImg from '../assets/images/textures/texture0-ao.png';
 // 1.创建场景
 const scene = new THREE.Scene();
 
 // 2.创建相机
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/ window.innerHeight, 0.1, 1000);
 
-console.log(camera);
 camera.position.set(0, 0, 5);
 scene.add(camera);
 
@@ -19,23 +20,23 @@ scene.add(camera);
 // 创建纹理加载器，导入纹理
 const textureLoader = new THREE.TextureLoader();
 const texture = textureLoader.load(Img);
-
-console.log(texture);
-
-// texture.center.set(0.5, 0.5);
-// texture.offset.x = 0.5;
-// texture.rotation = Math.PI / 10;
-// texture.repeat.set(2,3);
-// texture.wrapS = THREE.RepeatWrapping;
-// texture.wrapT = THREE.RepeatWrapping;
+const alphaTexture = textureLoader.load(Alpha);
+const AOTexture = textureLoader.load(AOImg);
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
 const cubeMaterial = new THREE.MeshBasicMaterial({
     // color:0xffff00,
-    map:texture
+    map:texture,
+    // 透明贴图
+    // alphaMap:alphaTexture,
+    // transparent:true
+    // 环境遮挡贴图, 需要第二组UV 
+    aoMap:AOTexture
 });
+// 根据几何体已有的uv坐标设置第二组uv坐标
+cubeGeometry.setAttribute('uv2', new THREE.BufferAttribute(cubeGeometry.attributes.uv.array, 2));
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 scene.add(cube);
-
+console.log(cube);
 
 // 4. 初始化一个渲染器
 const renderer = new THREE.WebGLRenderer();
