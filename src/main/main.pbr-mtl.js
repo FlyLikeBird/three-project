@@ -5,6 +5,7 @@ import * as dat from 'dat.gui';
 import Img from '../assets/images/textures/texture0.jpg';
 import Alpha from '../assets/images/textures/texture0-alpha.png';
 import AOImg from '../assets/images/textures/texture0-ao.png';
+import DisplacementImg from '../assets/images/textures/texture0-displacement.png';
 // 1.创建场景
 const scene = new THREE.Scene();
 
@@ -15,22 +16,37 @@ camera.position.set(0, 0, 5);
 scene.add(camera);
 
 // 3.场景中添加Object3D物理, 创建几何体对象
-
-
 // 创建纹理加载器，导入纹理
-const textureLoader = new THREE.TextureLoader();
+const manager = new THREE.LoadingManager();
+manager.onStart = ()=>{
+    console.log('开始加载');
+}
+manager.onProgress = (url, num, total)=>{
+    console.log(url);
+    console.log('已加载纹理数:', num);
+    console.log('总共加载纹理数:', total);
+}
+manager.onLoad = ()=>{
+    console.log('所有纹理加载完成');
+}
+const textureLoader = new THREE.TextureLoader(manager);
 const texture = textureLoader.load(Img);
 const alphaTexture = textureLoader.load(Alpha);
-const AOTexture = textureLoader.load(AOImg);
-const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-const cubeMaterial = new THREE.MeshBasicMaterial({
+const displacementTexture = textureLoader.load(DisplacementImg);
+const cubeGeometry = new THREE.BoxGeometry(1, 1, 1, 20, 20, 20);
+// PBR材质一种基于物理的标准材质, 这种材质与传统材质的不同之处在于, 不使用近似值来表示光与表面的相互作用， 而是使用物理上正确的模型(比如金属度，粗糙度,折射率等物理参数)
+// 不是在特定光照下调整材质使其看起来很好，而是可以创造一种材质，能够正确的应对所有光照场景;
+const cubeMaterial = new THREE.MeshStandardMaterial({
     // color:0xffff00,
     map:texture,
     // 透明贴图
     // alphaMap:alphaTexture,
     // transparent:true
-    // 环境遮挡贴图, 需要第二组UV 
-    aoMap:AOTexture
+    // 位移贴图, 将网格中的顶点映射为图像中每个像素的值（白色为最高)，  
+    // displacementMap:displacementTexture,
+    // displacementScale:0.5,
+    // roughnessMap:alphaTexture,
+    metalness:1
 });
 // 根据几何体已有的uv坐标设置第二组uv坐标
 cubeGeometry.setAttribute('uv2', new THREE.BufferAttribute(cubeGeometry.attributes.uv.array, 2));
@@ -38,6 +54,14 @@ const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 scene.add(cube);
 console.log(cube);
 
+// 添加光源
+// 添加环境光
+const light = new THREE.AmbientLight(0xffffff, 0.2);
+scene.add(light);
+// 添加平行光
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 10, 10);
+scene.add(directionalLight);
 // 4. 初始化一个渲染器
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
